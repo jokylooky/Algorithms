@@ -1,4 +1,5 @@
 from typing import Optional, List
+import heapq
 
 '''Очередь'''
 
@@ -280,3 +281,75 @@ print('isFull(): ', cq.isFull())
 print('deQueue(): ', cq.deQueue())
 print('enQueue(4): ', cq.enQueue(4))
 print('Rear(): ', cq.Rear())
+
+'''4. Реализовать систему обработки заказов в ресторане (с приоритетами).'''
+print('\nЗадание 4. Реализовать систему обработки заказов в ресторане (с приоритетами).')
+
+# Класс приоритетной очереди
+class PriorityQueue:
+    def __init__(self):
+        self.heap = []
+        self._counter = 0
+
+    def enqueue(self, item, priority):
+        heapq.heappush(self.heap, (-priority, self._counter, item))
+        self._counter += 1
+
+    def dequeue(self):
+        if not self.heap:
+            raise IndexError("Очередь пуста")
+        return heapq.heappop(self.heap)[2]
+
+    def is_empty(self):
+        return len(self.heap) == 0
+
+class Order:
+    def __init__(self, dish, table, priority):
+        self.dish = dish
+        self.table = table
+        self.priority = priority
+
+    def __repr__(self):
+        return f"Order({self.dish!r}, table={self.table}, priority={self.priority})"
+
+# Система обработки заказов
+class RestaurantOrderSystem:
+    PRIORITY_VIP = 3
+    PRIORITY_HIGH = 2
+    PRIORITY_NORMAL = 1
+
+    def __init__(self):
+        self.queue = PriorityQueue()
+
+    def add_order(self, order):
+        self.queue.enqueue(order, order.priority)
+        print(f"Добавлен заказ: {order.dish} (стол {order.table}, приоритет {order.priority})")
+
+    def process_next_order(self):
+        if self.queue.is_empty():
+            print("Нет заказов для обработки.")
+            return
+        order = self.queue.dequeue()
+        print(f"Обрабатывается заказ: {order.dish} для стола {order.table} (приоритет {order.priority})")
+
+    def pending_orders_count(self):
+        return len(self.queue.heap)
+
+# Тест
+system = RestaurantOrderSystem()
+
+orders = [
+    Order("Суп", 5, RestaurantOrderSystem.PRIORITY_NORMAL),
+    Order("Стейк", 2, RestaurantOrderSystem.PRIORITY_VIP),
+    Order("Паста", 1, RestaurantOrderSystem.PRIORITY_HIGH),
+    Order("Десерт", 7, RestaurantOrderSystem.PRIORITY_NORMAL),
+    Order("Пицца", 3, RestaurantOrderSystem.PRIORITY_VIP)
+]
+
+for order in orders:
+    system.add_order(order)
+
+print(f"\nВсего заказов в очереди: {system.pending_orders_count()}\n")
+
+while not system.queue.is_empty():
+    system.process_next_order()
